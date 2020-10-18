@@ -1,1 +1,17 @@
 @import "../../theme/shared/variables";
+
+.webcam,
+.canvas {
+  position: "absolute";
+  margin-left: "auto";
+  margin-left: "auto";
+  left: 0;
+  right: 0;
+  z-index: 9;
+}
+
+.webcam {
+  width: 640px;
+  height: 480px;
+}
+
