@@ -1,3 +1,5 @@
+import { LazyBrush, Point } from "lazy-brush";
+
 type Finger = "thumb" | "indexFinger" | "middleFinger" | "ringFinger" | "pinky";
 
 export namespace CanvasHelper {
@@ -8,6 +10,51 @@ export namespace CanvasHelper {
     ringFinger: [0, 13, 14, 15, 16],
     pinky: [0, 17, 18, 19, 20],
   };
+
+  function midPointBtw(p1, p2) {
+    return {
+      x: p1.x + (p2.x - p1.x) / 2,
+      y: p1.y + (p2.y - p1.y) / 2,
+    };
+  }
+
+  const points = [];
+  function handlePointerMove(
+    x,
+    y,
+    context: CanvasRenderingContext2D,
+    lazy: LazyBrush
+  ) {
+    const hasChanged = lazy.update({ x: x, y: y }, { both: true });
+    context.lineJoin = "round";
+    context.lineCap = "round";
+    context.strokeStyle = "green";
+    if (hasChanged) {
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      context.lineWidth = 10;
+      points.push(lazy.brush.toObject());
+
+      var p1 = points[0];
+      var p2 = points[1];
+
+      context.moveTo(p2.x, p2.y);
+      context.beginPath();
+
+      for (var i = 1, len = points.length; i < len; i++) {
+        // we pick the point between pi+1 & pi+2 as the
+        // end point and p1 as our control point
+        var midPoint = midPointBtw(p1, p2);
+        context.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y);
+        p1 = points[i];
+        p2 = points[i + 1];
+      }
+      // Draw last line as a straight line while
+      // we wait for the next point to be able to calculate
+      // the bezier control point
+      context.lineTo(p1.x, p1.y);
+      context.stroke();
+    }
+  }
 
   export const drawPoint = (
     y: number,
@@ -58,7 +105,12 @@ export namespace CanvasHelper {
     }
   };
 
-  export const drawFingerTips = (keypoints, ctx, fingers?: Finger[]) => {
+  export const drawFingerTips = (
+    keypoints,
+    ctx,
+    fingers: Finger[],
+    lazy: LazyBrush
+  ) => {
     const keypointsArray = keypoints;
 
     const fingersToDraw = fingers.length
@@ -71,7 +123,8 @@ export namespace CanvasHelper {
       const y = keypointsArray[idx][0];
       const x = keypointsArray[idx][1];
 
-      drawPoint(x - 2, y - 2, 10, ctx);
+      handlePointerMove(y - 2, x - 2, ctx, lazy);
+      // drawPoint(x - 2, y - 2, 10, ctx);
       // drawPoint(points, false, ctx);
     }
   };
