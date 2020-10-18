@@ -1,15 +1,17 @@
 import * as React from "react";
-import { RouteComponentProps } from 'react-router';
+import * as Webcam from "react-webcam";
 
 import "./home.scss";
-import { AppContext } from '../shell';
+import { AppContext } from "../shell";
 
-export const HomeView: React.FunctionComponent<RouteComponentProps> = props => {
-
-
-  const { data } = React.useContext(AppContext)
+export const HomeView: React.FC = (props) => {
+  const webcamRef = React.useRef(null);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
   return (
-    <div>Hello. It is me, the homepage. Here is some data from context: {data}</div>
+    <div>
+      <Webcam className="webcam" ref={webcamRef} />
+      <canvas className="canvas" ref={canvasRef} />
+    </div>
   );
-}
+};
